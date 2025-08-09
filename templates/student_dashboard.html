@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - EduStream{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1>Student Dashboard</h1>
+        <p>Access your classes, materials, and track your learning progress</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ enrolled_classes|length }}</h3>
+                <p>Enrolled Classes</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon live">
+                <i class="fas fa-broadcast-tower"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ enrolled_classes|selectattr('is_live')|list|length }}</h3>
+                <p>Live Now</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon completed">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ enrollments|selectattr('attendance_status', 'equalto', 'attended')|list|length }}</h3>
+                <p>Attended</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon materials">
+                <i class="fas fa-percentage"></i>
+            </div>
+            <div class="stat-info">
+                <h3>85%</h3>
+                <p>Attendance Rate</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <a href="{{ url_for('schedule') }}" class="btn btn-primary">
+            <i class="fas fa-calendar"></i> View Schedule
+        </a>
+        <button class="btn btn-outline" onclick="showAvailableClasses()">
+            <i class="fas fa-search"></i> Browse Classes
+        </button>
+    </div>
+
+    <!-- Enrolled Classes -->
+    <div class="section">
+        <h2>Your Classes</h2>
+        {% if enrolled_classes %}
+        <div class="classes-grid">
+            {% for class in enrolled_classes %}
+            <div class="class-card {% if class.is_live %}live{% endif %}">
+                <div class="class-header">
+                    <h3>{{ class.title }}</h3>
+                    <div class="class-status {{ class.status }}">
+                        {% if class.status == 'live' %}
+                            <i class="fas fa-circle"></i> Live
+                        {% elif class.status == 'scheduled' %}
+                            <i class="fas fa-clock"></i> Upcoming
+                        {% else %}
+                            <i class="fas fa-check"></i> Completed
+                        {% endif %}
+                    </div>
+                </div>
+                <p class="class-description">{{ class.description }}</p>
+                <div class="class-meta">
+                    <div class="class-teacher">
+                        <i class="fas fa-user"></i>
+                        {{ class.teacher.username }}
+                    </div>
+                    <div class="class-time">
+                        <i class="fas fa-calendar"></i>
+                        {{ class.scheduled_time.strftime('%Y-%m-%d %H:%M') }}
+                    </div>
+                </div>
+                <div class="class-actions">
+                    {% if class.status == 'live' %}
+                        <a href="{{ url_for('live_class', class_id=class.id) }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-video"></i> Join Live
+                        </a>
+                    {% endif %}
+                    <a href="{{ url_for('materials', class_id=class.id) }}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-folder"></i> Materials
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-book-open"></i>
+            <h3>No Enrolled Classes</h3>
+            <p>Explore available classes and start your learning journey</p>
+            <button class="btn btn-primary" onclick="showAvailableClasses()">
+                <i class="fas fa-search"></i> Browse Available Classes
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Available Classes -->
+    <div id="availableClassesSection" class="section" style="display: none;">
+        <h2>Available Classes</h2>
+        {% if available_classes %}
+        <div class="classes-grid">
+            {% for class in available_classes %}
+            <div class="class-card available">
+                <div class="class-header">
+                    <h3>{{ class.title }}</h3>
+                    <div class="class-status">
+                        <i class="fas fa-plus-circle"></i> Available
+                    </div>
+                </div>
+                <p class="class-description">{{ class.description }}</p>
+                <div class="class-meta">
+                    <div class="class-teacher">
+                        <i class="fas fa-user"></i>
+                        {{ class.teacher.username }}
+                    </div>
+                    <div class="class-time">
+                        <i class="fas fa-calendar"></i>
+                        {{ class.scheduled_time.strftime('%Y-%m-%d %H:%M') }}
+                    </div>
+                </div>
+                <div class="class-actions">
+                    <a href="{{ url_for('enroll_class', class_id=class.id) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Enroll Now
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>No Available Classes</h3>
+            <p>Check back later for new classes</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function showAvailableClasses() {
+    const section = document.getElementById('availableClassesSection');
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        section.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        section.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1>Transform Your Teaching Experience</h1>
+            <p>Modern online teaching platform with live streaming, interactive materials, and comprehensive student management</p>
+            <div class="hero-features">
+                <div class="feature-item">
+                    <i class="fas fa-video"></i>
+                    <span>Live Streaming</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-book"></i>
+                    <span>Material Management</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Smart Scheduling</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Progress Tracking</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="auth-section">
+            <div class="auth-card">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="showTab('login')">Login</button>
+                    <button class="auth-tab" onclick="showTab('register')">Register</button>
+                </div>
+                
+                <!-- Login Form -->
+                <div id="login-form" class="auth-form active">
+                    <h3>Welcome Back</h3>
+                    <form method="POST" action="{{ url_for('login') }}">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                    
+                    <div class="demo-accounts">
+                        <h4>Demo Accounts</h4>
+                        <div class="demo-buttons">
+                            <button onclick="fillDemo('teacher')" class="btn btn-outline">Teacher Demo</button>
+                            <button onclick="fillDemo('student')" class="btn btn-outline">Student Demo</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Register Form -->
+                <div id="register-form" class="auth-form">
+                    <h3>Join Sam'S classes</h3>
+                    <form method="POST" action="{{ url_for('register') }}">
+                        <div class="form-group">
+                            <label for="reg-username">Username</label>
+                            <input type="text" id="reg-username" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-email">Email</label>
+                            <input type="email" id="reg-email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-password">Password</label>
+                            <input type="password" id="reg-password" name="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="role">I am a:</label>
+                            <select id="role" name="role">
+                                <option value="student">Student</option>
+                                <option value="teacher">Teacher</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    
+    document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
+    document.getElementById(`${tab}-form`).classList.add('active');
+}
+
+function fillDemo(role) {
+    if (role === 'teacher') {
+        document.getElementById('username').value = 'teacher_demo';
+        document.getElementById('password').value = 'demo123';
+    } else {
+        document.getElementById('username').value = 'student_demo';
+        document.getElementById('password').value = 'demo123';
+    }
+}
+
+// Create demo accounts if they don't exist
+window.addEventListener('load', function() {
+    // This would normally be handled by a separate initialization script
+    console.log('Demo accounts: teacher_demo/demo123, student_demo/demo123');
+});
+</script>
+{% endblock %}

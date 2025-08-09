@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Live Class: {{ class_obj.title }} - EduStream{% endblock %}
+
+{% block content %}
+<div class="live-class">
+    <div class="live-header">
+        <div class="live-info">
+            <h1>{{ class_obj.title }}</h1>
+            <div class="live-status">
+                <i class="fas fa-circle pulse"></i>
+                <span>LIVE</span>
+            </div>
+        </div>
+        <div class="live-meta">
+            <span><i class="fas fa-user"></i> {{ class_obj.teacher.username }}</span>
+            <span><i class="fas fa-users"></i> {{ class_obj.enrollments|length }} students</span>
+            <span><i class="fas fa-clock"></i> {{ class_obj.duration_minutes }} min</span>
+        </div>
+    </div>
+
+    <div class="live-content">
+        <!-- Video Stream Area -->
+        <div class="video-section">
+            <div class="video-container">
+                <div class="video-placeholder">
+                    <div class="video-controls">
+                        <i class="fas fa-video"></i>
+                        <h3>Live Stream Active</h3>
+                        <p>{{ class_obj.description }}</p>
+                    </div>
+                    <div class="stream-simulation">
+                        <div class="stream-indicator">
+                            <i class="fas fa-broadcast-tower"></i>
+                            <span>Broadcasting...</span>
+                        </div>
+                        <div class="stream-quality">
+                            <span>1080p HD</span>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if session.role == 'teacher' %}
+                <div class="teacher-controls">
+                    <button class="control-btn active">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button class="control-btn active">
+                        <i class="fas fa-video"></i>
+                    </button>
+                    <button class="control-btn">
+                        <i class="fas fa-desktop"></i>
+                    </button>
+                    <button class="control-btn">
+                        <i class="fas fa-comments"></i>
+                    </button>
+                    <button class="control-btn end-call">
+                        <i class="fas fa-phone-slash"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="live-sidebar">
+            <!-- Chat Section -->
+            <div class="chat-section">
+                <div class="chat-header">
+                    <h3><i class="fas fa-comments"></i> Live Chat</h3>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-message system">
+                        <span class="message-text">Welcome to {{ class_obj.title }}!</span>
+                    </div>
+                    <div class="chat-message">
+                        <span class="message-user">{{ class_obj.teacher.username }}</span>
+                        <span class="message-text">Hello everyone! Welcome to today's class.</span>
+                    </div>
+                    <div class="chat-message">
+                        <span class="message-user">Student1</span>
+                        <span class="message-text">Thank you for the class!</span>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Type your message...">
+                    <button onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Class Materials -->
+            <div class="materials-section">
+                <div class="materials-header">
+                    <h3><i class="fas fa-folder"></i> Class Materials</h3>
+                    <a href="{{ url_for('materials', class_id=class_obj.id) }}" class="btn btn-sm btn-outline">
+                        View All
+                    </a>
+                </div>
+                <div class="materials-list">
+                    {% for material in class_obj.materials %}
+                    <div class="material-item">
+                        <div class="material-icon">
+                            {% if material.file_type in ['pdf'] %}
+                                <i class="fas fa-file-pdf"></i>
+                            {% elif material.file_type in ['doc', 'docx'] %}
+                                <i class="fas fa-file-word"></i>
+                            {% elif material.file_type in ['ppt', 'pptx'] %}
+                                <i class="fas fa-file-powerpoint"></i>
+                            {% elif material.file_type in ['mp4', 'avi', 'mov'] %}
+                                <i class="fas fa-file-video"></i>
+                            {% else %}
+                                <i class="fas fa-file"></i>
+                            {% endif %}
+                        </div>
+                        <div class="material-info">
+                            <h4>{{ material.title }}</h4>
+                            <p>{{ material.file_type.upper() }}</p>
+                        </div>
+                        <a href="{{ url_for('download_file', filename=material.filename) }}" class="material-download">
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Participants -->
+            <div class="participants-section">
+                <div class="participants-header">
+                    <h3><i class="fas fa-users"></i> Participants ({{ class_obj.enrollments|length + 1 }})</h3>
+                </div>
+                <div class="participants-list">
+                    <div class="participant teacher">
+                        <div class="participant-avatar">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="participant-info">
+                            <span class="participant-name">{{ class_obj.teacher.username }}</span>
+                            <span class="participant-role">Teacher</span>
+                        </div>
+                        <div class="participant-status">
+                            <i class="fas fa-microphone"></i>
+                            <i class="fas fa-video"></i>
+                        </div>
+                    </div>
+                    {% for enrollment in class_obj.enrollments %}
+                    <div class="participant">
+                        <div class="participant-avatar">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="participant-info">
+                            <span class="participant-name">{{ enrollment.student.username }}</span>
+                            <span class="participant-role">Student</span>
+                        </div>
+                        <div class="participant-status">
+                            <i class="fas fa-microphone-slash muted"></i>
+                            <i class="fas fa-video-slash muted"></i>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Simulate live chat functionality
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const messagesContainer = document.getElementById('chatMessages');
+    
+    if (input.value.trim()) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message';
+        messageDiv.innerHTML = `
+            <span class="message-user">{{ session.username }}</span>
+            <span class="message-text">${input.value}</span>
+        `;
+        
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        input.value = '';
+    }
+}
+
+// Send message on Enter key
+document.getElementById('chatInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+// Simulate stream activity
+setInterval(() => {
+    const indicator = document.querySelector('.stream-indicator span');
+    if (indicator) {
+        indicator.textContent = indicator.textContent === 'Broadcasting...' ? 'Live Stream...' : 'Broadcasting...';
+    }
+}, 2000);
+</script>
+{% endblock %}
